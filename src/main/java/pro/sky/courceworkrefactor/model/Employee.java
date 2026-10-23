@@ -1,4 +1,6 @@
-package pro.sky.courceworkrefactor.employee;
+package pro.sky.courceworkrefactor.model;
+
+import java.util.Objects;
 
 public class Employee {
     private String firstName;
@@ -26,19 +28,22 @@ public class Employee {
     }
 
     @Override
-    public String toString () {
-        return this.getFirstName() + " " + this.getLastName();
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Employee employee = (Employee) o;
+        return Objects.equals(firstName, employee.firstName) && Objects.equals(lastName, employee.lastName);
     }
 
     @Override
-    public int hashCode () {
-        return java.util.Objects.hash(this.toString());
+    public int hashCode() {
+        return Objects.hash(firstName, lastName);
     }
 
-    public boolean equals (Employee employee) {
-        if (this.hashCode()!=employee.hashCode()) {
-            return false;
-        }
-        return this.toString().equals(employee.toString());
+    @Override
+    public String toString() {
+        return "Employee{" +
+                "firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                '}';
     }
 }

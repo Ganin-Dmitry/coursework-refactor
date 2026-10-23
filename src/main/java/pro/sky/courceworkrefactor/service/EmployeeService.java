@@ -1,10 +1,12 @@
 package pro.sky.courceworkrefactor.service;
 
+import pro.sky.courceworkrefactor.model.Employee;
+
+import java.util.Collection;
+
 public interface EmployeeService {
-    public void addEmployee (String firstName, String lastName);
-    public void removeEmployee(String firstName, String lastName);
-    public int searchIndexEmployee (String firstName, String lastName);
-    public boolean checkEmployee (String firstName, String lastName);
-    public boolean checkSize ();
-    public String getListEmployees ();
+    Employee add (String firstName, String lastName);
+    Employee remove (String firstName, String lastName);
+    Employee find (String firstName, String lastName);
+    Collection <Employee> getListEmployees();
 }

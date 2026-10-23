@@ -1,81 +1,60 @@
 package pro.sky.courceworkrefactor.service;
 
 import org.springframework.stereotype.Service;
-import pro.sky.courceworkrefactor.employee.Employee;
-import pro.sky.courceworkrefactor.employee.EmployeeBook;
 import pro.sky.courceworkrefactor.exception.EmployeeAlreadyAddedException;
-import pro.sky.courceworkrefactor.exception.EmployeeNotFoundException;
 import pro.sky.courceworkrefactor.exception.EmployeeStorageIsFullException;
+import pro.sky.courceworkrefactor.model.Employee;
+import pro.sky.courceworkrefactor.exception.EmployeeNotFoundException;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
-    private final EmployeeBook employeesBook;
-    public EmployeeServiceImpl (EmployeeBook employeesBook) {
-        this.employeesBook = employeesBook;
+    private final int maxListSize = 20;
+    private final List<Employee> employeeList;
+    public EmployeeServiceImpl () {
+        this.employeeList = new ArrayList<>();
     }
 
-    public void addEmployee (String firstName, String lastName) {
-        if (firstName.isBlank() || lastName.isBlank()) {
-            throw new IllegalArgumentException("Допущена ошибка при вводе полей.");
+    @Override
+    public Employee add (String firstName, String lastName) {
+        if (!checkListSize()) {
+            throw new EmployeeStorageIsFullException();
         }
-        if (!checkSize()) {
-            throw new EmployeeStorageIsFullException("Достигнут лимит в списке");
+        Employee employee = new Employee(firstName, lastName);
+        if (employeeList.contains(employee)) {
+            throw new EmployeeAlreadyAddedException();
         }
-        if (checkEmployee(firstName, lastName)) {
-            throw new EmployeeAlreadyAddedException("Объект уже добавлен в список");
-        }
-        employeesBook.getEmployees().add(new Employee(firstName, lastName));
+        employeeList.add(employee);
+        return employee;
     }
 
-    public void removeEmployee(String firstName, String lastName) {
-        if (firstName.isBlank() || lastName.isBlank()) {
-            throw new IllegalArgumentException("Допущена ошибка при вводе полей.");
+    @Override
+    public Employee remove (String firstName, String lastName) {
+        Employee employee = new Employee (firstName, lastName);
+        if (employeeList.contains(employee)) {
+            employeeList.remove(employee);
+            return employee;
         }
-        try {
-            int index = searchIndexEmployee(firstName, lastName);
-            employeesBook.getEmployees().remove(index);
-        } catch (EmployeeNotFoundException e) {
-            throw new EmployeeNotFoundException("Объект в списке не найден");
-        }
+        throw new EmployeeNotFoundException();
     }
 
-    public int searchIndexEmployee (String firstName, String lastName) {
-        if (firstName.isBlank() || lastName.isBlank()) {
-            throw new IllegalArgumentException("Допущена ошибка при вводе полей.");
+    @Override
+    public Employee find (String firstName, String lastName) {
+        Employee employee = new Employee(firstName, lastName);
+        if (employeeList.contains(employee)) {
+            return employee;
         }
-        int index = -1;
-        for (int employee = 0; employee < employeesBook.getEmployees().size(); employee++) {
-            if (employeesBook.getEmployees().get(employee).getFirstName().equals(firstName) && employeesBook.getEmployees().get(employee).getLastName().equals(lastName)) {
-                index = employee;
-                break;
-            }
-        }
-        if (index == -1) {
-            throw new EmployeeNotFoundException("Объект в списке не найден");
-        }
-        return index;
+        throw new EmployeeNotFoundException();
     }
 
-    public boolean checkEmployee (String firstName, String lastName) {
-        try {
-            return searchIndexEmployee(firstName, lastName) != -1;
-        } catch (EmployeeNotFoundException e) {
-            return false;
-        }
+    public boolean checkListSize () {
+        return employeeList.size() <= maxListSize;
     }
 
-    public boolean checkSize () {
-        return employeesBook.getEmployees().size() < employeesBook.getMaxQuantityEmployees();
-    }
-
-    public String getListEmployees () {
-        if (employeesBook.getEmployees().size() == 0) {
-            throw new EmployeeNotFoundException("В списке не найдено учтенных сотрудников.");
-        }
-        String listEmployees = "";
-        for (int indexEmployee = 0; indexEmployee < employeesBook.getEmployees().size(); indexEmployee++) {
-            listEmployees = listEmployees + employeesBook.getEmployees().get(indexEmployee).toString() + "<br>";
-        }
-        return listEmployees;
+    public Collection<Employee> getListEmployees () {
+        return new ArrayList<>(employeeList);
     }
 }
